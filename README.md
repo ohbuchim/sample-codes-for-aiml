@@ -1,2 +1,2 @@
-# sample-codes-for-images
-こちらでは画像を扱うサンプルコードを公開しています。
+# sample-codes-for-aiml
+こちらでは AI/ML のサンプルコードを公開しています。
