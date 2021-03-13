@@ -4,7 +4,7 @@
 - amazon-rekognition-image-analysis
   - AWS SDK for Python を使って Amazon Rekognition で画像分析します
 - autogluon-tabular-customer-churn
-  - AutoGluon-Tabular を使って顧客離反予測します
+  - [AutoGluon-Tabular](https://auto.gluon.ai/stable/tutorials/tabular_prediction/index.html) を使って顧客離反予測します
 - similar-image-search
   - MXNet の学習済みモデルと Amazon Elasticsearch Service を使って類似画像検索します
 - tensorflow2-mnist-byom
