@@ -1,5 +1,5 @@
 # sample-codes-for-aiml
-こちらでは AI/ML のサンプルコードを公開しています。
+こちらでは AWS を使った AI/ML のサンプルコードを公開しています。
 
 - amazon-rekognition-image-analysis
   - AWS SDK for Python を使って Amazon Rekognition で画像分析します
