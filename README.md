@@ -11,6 +11,8 @@
   - Amazon SageMaker でカスタムコンテナで LightGBM を使うサンプルです。
     - lightGBM-byoc.ipynb: カスタムコンテナを使って学習とリアルタイム推論を行う方法を [公式のサンプルノートブック](https://github.com/aws-samples/amazon-sagemaker-script-mode/blob/master/lightgbm-byo/lightgbm-byo.ipynb) をベースに必要最小限な部分を抜き出して簡素化したノートブック
     - lightGBM-batch-inference.ipynb: Transform API と Amazon SageMaker Processing それぞれを使ってバッチ推論を行うノートブック
+- multi-model-endpoint
+  - SageMaker のマルチモデルエンドポイント（1つのエンドポイントに複数のモデルをデプロイする機能）でモデルをホスティングします
 - similar-image-search
   - MXNet の学習済みモデルと Amazon Elasticsearch Service を使って類似画像検索します
 - tensorflow2-mnist-byom
