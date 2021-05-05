@@ -5,6 +5,8 @@
   - AWS SDK for Python を使って Amazon Rekognition で画像分析します
 - autogluon-tabular-customer-churn
   - [AutoGluon-Tabular](https://auto.gluon.ai/stable/tutorials/tabular_prediction/index.html) を使って顧客離反予測します
+- deoldify-sagemaker
+  - モノクロ画像をカラー化する [DeOldify](https://github.com/jantic/DeOldify) を Amazon SageMaker で使うノートブックです
 - gnn-node-classification
   - GNN を使ってノード分類を行うサンプルです。
 - lightgbm-byoc
