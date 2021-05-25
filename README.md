@@ -5,7 +5,7 @@
   - AWS SDK for Python を使って Amazon Rekognition で画像分析します
 - amazon-sagemaker-jumpstart
   - Amazon SageMaker JumpStart に関するノートブックです
-  - sagemaker-jumpstart-inference-local.ipynb: Amazon SageMaker JumpStart で学習させた PyTorch の VGG モデルを使ってローカル（ノートブックインスタンス）で推論するノートブック
+  - sagemaker-jumpstart-inference-local.ipynb: Amazon SageMaker JumpStart で学習させた PyTorch の VGG モデルを使ってローカルで推論するノートブック
 - autogluon-tabular-customer-churn
   - [AutoGluon-Tabular](https://auto.gluon.ai/stable/tutorials/tabular_prediction/index.html) を使って顧客離反予測します
 - deoldify-sagemaker
