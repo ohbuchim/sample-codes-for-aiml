@@ -16,6 +16,8 @@
   - Amazon SageMaker でカスタムコンテナで LightGBM を使うサンプルです。
     - lightGBM-byoc.ipynb: カスタムコンテナを使って学習とリアルタイム推論を行う方法を [公式のサンプルノートブック](https://github.com/aws-samples/amazon-sagemaker-script-mode/blob/master/lightgbm-byo/lightgbm-byo.ipynb) をベースに必要最小限な部分を抜き出して簡素化したノートブック
     - lightGBM-batch-inference.ipynb: Transform API と Amazon SageMaker Processing それぞれを使ってバッチ推論を行うノートブック
+- mlops
+  - step-functions-model-train-evaluate-pipeline: AWS Step Functions Data Science SDK, Amazon SageMaker, Amazon SageMaker Experiments を使ってデータの前処理、モデルの学習、モデルの評価を行うパイプラインを作成するノートブック
 - multi-model-endpoint
   - SageMaker のマルチモデルエンドポイント（1つのエンドポイントに複数のモデルをデプロイする機能）でモデルをホスティングします
 - similar-image-search
