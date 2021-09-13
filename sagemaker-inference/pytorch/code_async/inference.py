@@ -33,6 +33,7 @@ def input_fn(request_body, request_content_type):
 def predict_fn(input_object, model):
     """Execute the model on input data"""
     with torch.no_grad():
+        model.eval()
         prediction = model(input_object)
     return prediction
 
