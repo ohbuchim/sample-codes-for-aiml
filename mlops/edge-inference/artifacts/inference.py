@@ -9,7 +9,7 @@ import json
 import os
 from PIL import Image
 
-os.environ['TVM_TENSORRT_CACHE_DIR'] = '.'
+os.environ['TVM_TENSORRT_CACHE_DIR'] = './cache/'
 os.environ['TVM_TENSORRT_USE_FP16'] = '1'
 
 class Inference(object):
