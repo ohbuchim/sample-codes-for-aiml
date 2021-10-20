@@ -31,7 +31,8 @@ def transform_manifest():
         line_json = json.loads(line)
         for j in line_json["detection-annotations"]:
             annotations_json = j['annotations']
-            source_ref = os.path.join(source_ref_dir, j['frame'])
+            #source_ref = os.path.join(source_ref_dir, j['frame'])
+            source_ref = source_ref_dir + '/' + j['frame']
             annotations = []
             class_map = {}
             confidence = []
