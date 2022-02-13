@@ -1,6 +1,6 @@
 # ファイル概要
 
-ML パイプライン作成用、モデルデプロイ用の CodeBuild で使用するファイルです。
+ML パイプライン作成用の CodeBuild で使用するファイルです。
 
 - buildspec.yml: ML パイプライン用 CodeBuild の設定ファイル
 - pipeline.py: ML パイプライン用 CodeBuild が実行する Step Functions ワークフロー作成スクリプト
