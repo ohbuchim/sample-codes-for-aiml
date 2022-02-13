@@ -25,7 +25,7 @@ def endpoint_exists(endpoint_name):
     return False
 
 
-def register_model(approval_comment, event):
+def register_model(approval_comment, event, approved):
 
     print('approval_comment', approval_comment)
 
@@ -44,6 +44,10 @@ def register_model(approval_comment, event):
         )
     )
 
+    status = 'Rejected'
+    if approved is True:
+        status = 'Approved'
+
     inference_instance_type = "ml.m5.xlarge"
     model_package = model.register(
         model_package_group_name=event['model-package-group-arn'],
@@ -53,7 +57,7 @@ def register_model(approval_comment, event):
         response_types=["application/x-npy"],
         description=approval_comment,
         model_metrics=model_metrics,
-        approval_status="Approved",  # Approved/Rejected/PendingManualApproval (default: “PendingManualApproval”)
+        approval_status=status,  # Approved/Rejected/PendingManualApproval (default: “PendingManualApproval”)
     )
 
     model_package_arn_v = model_package.model_package_arn
@@ -79,10 +83,10 @@ def handler(event, context):
     print(data)
     accuracy = data['custom_metrics']['accuracy']['value']
 
-    model_package_arn_v = register_model('Auto approved, accuracy:' +
-                                         str(round(accuracy, 2)), event)
-
     if accuracy > metric_threshold:
+        model_package_arn_v = register_model('Auto approved, accuracy:' +
+                                             str(round(accuracy, 2)), event,
+                                             True)
 
         # パラメタの詳細はこちら
         # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sagemaker.html#SageMaker.Client.create_model
@@ -151,6 +155,9 @@ def handler(event, context):
                 ]
             )
     else:
+        model_package_arn_v = register_model('Not approved, accuracy:' +
+                                             str(round(accuracy, 2)), event,
+                                             False)
         message = 'Model not deployed. accuracy: ' + str(accuracy)
 
     print(message)
