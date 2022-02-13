@@ -1,0 +1,32 @@
+
+version: 0.2
+#image: standard:5.0-21.10.05-
+env:
+  variables:
+    # SOURCE_VERSION: $(echo $CODEBUILD_RESOLVED_SOURCE_VERSION)
+    SRC: pipeline.py
+  exported-variables:
+    - PREP_JOB_NAME
+    - TRAIN_JOB_NAME
+    - EVAL_JOB_NAME
+    - TRAINED_MODEL_S3
+    - INFERENCE_IMAGE_URI
+    - TIMESTAMP
+    - EVAL_RESULT_PATH
+
+phases:
+  install:
+    runtime-versions:
+      # docker: 18
+      python: 3.8
+    commands:
+      - pip install -r requirements.txt
+
+  build:
+    commands:
+      # Set Environment Variables from flow.yml
+      - . ./setenv.sh
+      # Build Docker images and push to ECR
+      - . ./ml-pipeline/ecr-regist-images.sh
+      # Execute ML workflow
+      - python $SRC
