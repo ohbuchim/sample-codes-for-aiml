@@ -11,10 +11,6 @@ from torch.utils.data import DataLoader
 import torch
 
 
-# data_s3_path = 's3://fast-ai-imageclas/mnist_png.tgz'
-# s3 = boto3.resource('s3')
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--input-dir", type=str, default='/opt/ml/processing/input')
@@ -22,11 +18,6 @@ if __name__ == "__main__":
     args, _ = parser.parse_known_args()
 
     print("Received arguments {}".format(args))
-
-#     bucket_name = data_s3_path.split('/')[2]
-#     file_key = data_s3_path[6+len(bucket_name):]
-#     filename = os.path.basename(data_s3_path)
-#     s3.Bucket(bucket_name).download_file(Filename=filename, Key=file_key)
     filename = os.path.join(args.input_dir, 'mnist_png.tgz')
 
     with tarfile.open(filename, 'r:gz') as t:
