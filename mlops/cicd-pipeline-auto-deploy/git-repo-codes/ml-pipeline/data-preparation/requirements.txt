@@ -1,6 +1,6 @@
 boto3==1.20.42
 numpy==1.19.5
-pandas==0.25.3
+pandas==1.0.4
 sagemaker==2.73.0
 torch==1.9.1
 torchvision==0.10.1

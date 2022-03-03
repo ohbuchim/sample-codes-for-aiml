@@ -1,4 +1,4 @@
 boto3==1.20.42
-pandas==0.25.3
+pandas==1.0.4
 sagemaker==2.73.0
 awslambdaric
