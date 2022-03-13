@@ -1,0 +1,271 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "ssm:PutParameter",
+                "events:PutTargets",
+                "events:DeleteRule",
+                "cloudtrail:PutEventSelectors",
+                "cloudtrail:StartLogging",
+                "logs:DeleteLogGroup",
+                "cloudtrail:CreateTrail",
+                "events:PutRule",
+                "codestar-connections:GetConnection",
+                "events:RemoveTargets",
+                "cloudtrail:GetEventSelectors",
+                "events:DisableRule"
+            ],
+            "Resource": [
+                "arn:aws:codestar-connections:*:*:connection/*",
+                "arn:aws:logs:*:*:log-group:/aws/codebuild/*:log-stream:*",
+                "arn:aws:cloudtrail:*:*:trail/codepipeline-source-trail",
+                "arn:aws:ssm:*:*:parameter/CodeBuild/*",
+                "arn:aws:events:*:*:rule/codepipeline-*"
+            ]
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": [
+                "iam:DeactivateMFADevice",
+                "iam:CreateServiceSpecificCredential",
+                "iam:DeleteAccessKey",
+                "iam:ListRoleTags",
+                "iam:DeletePolicy",
+                "codestar-notifications:ListNotificationRules",
+                "iam:UpdateOpenIDConnectProviderThumbprint",
+                "iam:ListServiceSpecificCredentials",
+                "iam:ListSigningCertificates",
+                "codedeploy:ListApplications",
+                "iam:AddRoleToInstanceProfile",
+                "codebuild:*",
+                "iam:SetSecurityTokenServicePreferences",
+                "elasticbeanstalk:DescribeEnvironments",
+                "iam:DeleteServerCertificate",
+                "iam:UploadSSHPublicKey",
+                "events:RemoveTargets",
+                "logs:FilterLogEvents",
+                "iam:ListRolePolicies",
+                "iam:DeleteOpenIDConnectProvider",
+                "states:*",
+                "iam:ListPolicies",
+                "iam:DetachRolePolicy",
+                "cloudtrail:LookupEvents",
+                "iam:UpdateServiceSpecificCredential",
+                "events:DescribeRule",
+                "iam:ListSAMLProviders",
+                "iam:RemoveClientIDFromOpenIDConnectProvider",
+                "iam:ListEntitiesForPolicy",
+                "iam:DeleteRole",
+                "iam:UpdateRoleDescription",
+                "cloudwatch:GetMetricStatistics",
+                "cloudtrail:DescribeTrails",
+                "iam:UpdateServerCertificate",
+                "codecommit:*",
+                "codedeploy:ListDeploymentGroups",
+                "ec2:DescribeSubnets",
+                "iam:CreateInstanceProfile",
+                "events:PutRule",
+                "sns:ListTopics",
+                "iam:ResetServiceSpecificCredential",
+                "cloudwatch:ListMetrics",
+                "organizations:DescribePolicy",
+                "ecs:ListServices",
+                "iam:ListInstanceProfilesForRole",
+                "iam:PassRole",
+                "iam:EnableMFADevice",
+                "iam:ResyncMFADevice",
+                "iam:CreatePolicy",
+                "opsworks:DescribeLayers",
+                "iam:ListAttachedGroupPolicies",
+                "iam:ListPolicyTags",
+                "iam:DeleteAccountAlias",
+                "iam:UpdateSAMLProvider",
+                "iam:GetRole",
+                "events:DisableRule",
+                "iam:ListAccessKeys",
+                "iam:DeleteInstanceProfile",
+                "s3:*",
+                "iam:ListGroupPolicies",
+                "iam:ListRoles",
+                "iam:DeleteUser",
+                "ec2:DescribeSecurityGroups",
+                "organizations:ListPolicies",
+                "events:DeleteRule",
+                "ec2:DescribeVpcs",
+                "iam:DeleteVirtualMFADevice",
+                "kms:ListAliases",
+                "iam:ListServerCertificateTags",
+                "iam:AttachRolePolicy",
+                "ecr:*",
+                "organizations:ListParents",
+                "iam:ListAccountAliases",
+                "iam:UpdateRole",
+                "iam:ListGroups",
+                "iam:AddClientIDToOpenIDConnectProvider",
+                "iam:DeleteServiceSpecificCredential",
+                "iam:GetLoginProfile",
+                "iam:DeleteSAMLProvider",
+                "codedeploy:BatchGetDeploymentGroups",
+                "opsworks:DescribeStacks",
+                "organizations:ListRoots",
+                "events:EnableRule",
+                "iam:DeleteGroup",
+                "iam:ListServerCertificates",
+                "iam:RemoveRoleFromInstanceProfile",
+                "iam:UpdateGroup",
+                "organizations:DescribeAccount",
+                "iam:CreateRole",
+                "iam:ListVirtualMFADevices",
+                "organizations:ListChildren",
+                "iam:CreateLoginProfile",
+                "codestar-notifications:ListEventTypes",
+                "events:ListRuleNamesByTarget",
+                "iam:ListSSHPublicKeys",
+                "organizations:DescribeOrganization",
+                "iam:ListAttachedRolePolicies",
+                "iam:ListOpenIDConnectProviderTags",
+                "iam:CreateAccountAlias",
+                "logs:GetLogEvents",
+                "iam:ListSAMLProviderTags",
+                "events:ListRules",
+                "events:ListTargetsByRule",
+                "iam:ChangePassword",
+                "iam:UpdateLoginProfile",
+                "iam:CreateGroup",
+                "iam:UpdateUser",
+                "cloudformation:*",
+                "iam:UpdateAccessKey",
+                "iam:UpdateSSHPublicKey",
+                "s3-object-lambda:*",
+                "iam:DeleteSigningCertificate",
+                "iam:UpdateAccountPasswordPolicy",
+                "iam:ListGroupsForUser",
+                "iam:DeleteServiceLinkedRole",
+                "opsworks:DescribeApps",
+                "iam:GetAccountSummary",
+                "cloudwatch:GetMetricData",
+                "logs:DescribeLogStreams",
+                "iam:ListPoliciesGrantingServiceAccess",
+                "iam:DeleteSSHPublicKey",
+                "iam:ListInstanceProfileTags",
+                "iam:CreateVirtualMFADevice",
+                "iam:CreateSAMLProvider",
+                "iam:ListMFADevices",
+                "iam:CreateUser",
+                "codestar-notifications:ListTagsForResource",
+                "iam:CreateAccessKey",
+                "iam:AddUserToGroup",
+                "iam:RemoveUserFromGroup",
+                "organizations:DescribeOrganizationalUnit",
+                "iam:ListAttachedUserPolicies",
+                "elasticbeanstalk:DescribeApplications",
+                "elasticfilesystem:DescribeFileSystems",
+                "iam:DeleteLoginProfile",
+                "ecs:ListClusters",
+                "organizations:ListPoliciesForTarget",
+                "iam:UploadSigningCertificate",
+                "organizations:ListTargetsForPolicy",
+                "logs:DescribeLogGroups",
+                "iam:ListUserPolicies",
+                "iam:ListInstanceProfiles",
+                "codestar-connections:ListConnections",
+                "iam:CreateOpenIDConnectProvider",
+                "iam:UploadServerCertificate",
+                "events:PutTargets",
+                "iam:ListPolicyVersions",
+                "iam:ListOpenIDConnectProviders",
+                "codestar-notifications:ListTargets",
+                "lambda:*",
+                "codepipeline:*",
+                "iam:ListUsers",
+                "iam:UpdateSigningCertificate",
+                "iam:ListMFADeviceTags",
+                "iam:ListUserTags"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor2",
+            "Effect": "Allow",
+            "Action": [
+                "events:DeleteRule",
+                "events:PutTargets",
+                "events:PutRule",
+                "events:RemoveTargets"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "events:ManagedBy": "codeguru-reviewer.amazonaws.com"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor3",
+            "Effect": "Allow",
+            "Action": "iam:PassRole",
+            "Resource": "arn:aws:iam::*:role/service-role/cwe-role-*",
+            "Condition": {
+                "StringEquals": {
+                    "iam:PassedToService": "events.amazonaws.com"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor4",
+            "Effect": "Allow",
+            "Action": "iam:PassRole",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "iam:PassedToService": "codepipeline.amazonaws.com"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor5",
+            "Effect": "Allow",
+            "Action": "iam:CreateServiceLinkedRole",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "iam:AWSServiceName": "replication.ecr.amazonaws.com"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor6",
+            "Effect": "Allow",
+            "Action": "iam:PassRole",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "iam:PassedToService": "lambda.amazonaws.com"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor7",
+            "Effect": "Allow",
+            "Action": [
+                "events:DeleteRule",
+                "events:PutTargets",
+                "events:DescribeRule",
+                "events:EnableRule",
+                "events:PutRule",
+                "events:RemoveTargets",
+                "events:ListTargetsByRule",
+                "events:DisableRule",
+                "ssm:StartSession"
+            ],
+            "Resource": [
+                "arn:aws:events:*:*:rule/codecommit*",
+                "arn:aws:ecs:*:*:task/*/*"
+            ]
+        }
+    ]
+}
