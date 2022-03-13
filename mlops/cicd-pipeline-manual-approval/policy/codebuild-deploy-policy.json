@@ -1,0 +1,123 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "codestar-notifications:CreateNotificationRule",
+                "codestar-notifications:DescribeNotificationRule",
+                "codestar-notifications:UpdateNotificationRule",
+                "codestar-notifications:Subscribe",
+                "codestar-notifications:Unsubscribe"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "StringLike": {
+                    "codestar-notifications:NotificationsForResource": "arn:aws:codebuild:*"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": "iam:CreateServiceLinkedRole",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "iam:AWSServiceName": "replication.ecr.amazonaws.com"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor2",
+            "Effect": "Allow",
+            "Action": "iam:PassRole",
+            "Resource": "*",
+            "Condition": {
+                "StringEquals": {
+                    "iam:PassedToService": "lambda.amazonaws.com"
+                }
+            }
+        },
+        {
+            "Sid": "VisualEditor3",
+            "Effect": "Allow",
+            "Action": [
+                "iam:GetPolicyVersion",
+                "sagemaker:*",
+                "codebuild:DescribeTestCases",
+                "codestar-notifications:ListNotificationRules",
+                "logs:*",
+                "chatbot:DescribeSlackChannelConfigurations",
+                "codebuild:BatchGet*",
+                "codebuild:StopBuildBatch",
+                "codestar-notifications:ListEventTypes",
+                "events:ListRuleNamesByTarget",
+                "iam:ListAttachedRolePolicies",
+                "iam:ListRolePolicies",
+                "events:ListTargetsByRule",
+                "states:*",
+                "cloudtrail:LookupEvents",
+                "iam:GetRole",
+                "events:DescribeRule",
+                "iam:GetPolicy",
+                "cloudformation:*",
+                "s3-object-lambda:*",
+                "cloudwatch:GetMetricStatistics",
+                "codebuild:List*",
+                "codecommit:GetRepository",
+                "codebuild:StartBuild",
+                "ec2:DescribeSubnets",
+                "iam:GetRolePolicy",
+                "tag:GetResources",
+                "cloudwatch:GetMetricData",
+                "codebuild:GetResourcePolicy",
+                "codebuild:StopBuild",
+                "sns:ListTopics",
+                "codebuild:DescribeCodeCoverages",
+                "cloudwatch:ListMetrics",
+                "codestar-notifications:ListTagsForResource",
+                "codebuild:RetryBuild",
+                "codecommit:GetCommit",
+                "iam:PassRole",
+                "xray:GetTraceSummaries",
+                "codecommit:ListBranches",
+                "codebuild:RetryBuildBatch",
+                "sns:GetTopicAttributes",
+                "s3:*",
+                "iam:ListRoles",
+                "ec2:DescribeSecurityGroups",
+                "xray:BatchGetTraces",
+                "codestar-notifications:ListTargets",
+                "codestar-connections:ListConnections",
+                "ec2:DescribeVpcs",
+                "kms:ListAliases",
+                "codecommit:GetBranch",
+                "codebuild:StartBuildBatch",
+                "codepipeline:ListActionExecutions",
+                "lambda:*",
+                "ecr:*"
+            ],
+            "Resource": "*"
+        },
+        {
+            "Sid": "VisualEditor4",
+            "Effect": "Allow",
+            "Action": [
+                "ssm:PutParameter",
+                "codestar-connections:GetConnection"
+            ],
+            "Resource": [
+                "arn:aws:ssm:*:*:parameter/CodeBuild/*",
+                "arn:aws:codestar-connections:*:*:connection/*"
+            ]
+        },
+        {
+            "Sid": "VisualEditor5",
+            "Effect": "Allow",
+            "Action": "ssm:StartSession",
+            "Resource": "arn:aws:ecs:*:*:task/*/*"
+        }
+    ]
+}
