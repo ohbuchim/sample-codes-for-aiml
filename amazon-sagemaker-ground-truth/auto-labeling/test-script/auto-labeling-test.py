@@ -1,6 +1,8 @@
 import argparse
 import boto3
+import io
 import json
+import math
 import mxnet as mx
 import numpy as np
 import os
@@ -29,7 +31,7 @@ batch_manifest_filename = 'batch.manifest'
 confidence_thresh = 0
 total_confidence_thresh = 0
 project_name = ''
-bucket = ''
+bucket_name = ''
 prefix = ''
 data_output_s3_path = ''
 result_output_dir = ''
@@ -37,12 +39,41 @@ input_file_dir = ''
 gt_job_name = ''  # base_manifest_fileでジョブ名として使用した名前
 args = ''
 png_prefix = ''
+png_viewer_prefix = ''
 base_model_path = ''
 timestamp = ''
 role = ''
+html_header = f"""
+<!DOCTYPE html>
+<html lang=\"ja\">
+    <head>
+        <meta charset=\"utf-8\">
+        <title>Viewer</title>
+        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
+        <link rel=\"stylesheet\" href=\"style.css\">
+        <!-- [if lt IE 9] -->
+        <script src=\"http://html5shiv.googlecode.com/svn/trunk/html5.js\"></script>
+        <script src=\"http://css3-mediaqueries-js.googlecode.com/svn/trunk/css3-mediaqueries.js\"></script>
+        <!-- [endif] -->
+        <script src=\"main.js\"></script>
+    </head>
+
+    <style type=\"text/css\">
+        .vertical{{
+            display: flex;
+            flex-direction: column;
+        }}
+        .horizontal{{
+            display: flex;
+            flex-direction: row;
+        }}
+    </style>
+"""
 
 sess = sagemaker.Session()
 s3_client = boto3.client('s3')
+s3 = boto3.resource("s3")
+bucket = None
 training_container_image = sagemaker.image_uris.retrieve(
                             "semantic-segmentation",
                             sess.boto_region_name)
@@ -103,13 +134,14 @@ def create_and_upload_dataset(labeled_files, loop_counter):
     manifest_prefix = os.path.join(prefix, str(loop_counter), 'train')
 
     train_manifest_s3_path = sess.upload_data(
-        path=train_manifest_filename, bucket=bucket, key_prefix=manifest_prefix
+        path=train_manifest_filename, bucket=bucket_name,
+        key_prefix=manifest_prefix
     )
     print_log('train_manifest_s3_path:', train_manifest_s3_path)
 
     validation_manifest_s3_path = sess.upload_data(
         path=validation_manifest_filename,
-        bucket=bucket, key_prefix=manifest_prefix
+        bucket=bucket_name, key_prefix=manifest_prefix
     )
     print_log('validation_manifest_s3_path:', validation_manifest_s3_path)
 
@@ -228,7 +260,8 @@ def create_and_upload_manifest_for_batch(non_labeled_files, loop_counter):
                             prefix, str(loop_counter), 'autolabel')
 
     manifest_s3_path = sess.upload_data(
-        path=batch_manifest_filename, bucket=bucket, key_prefix=manifest_prefix
+        path=batch_manifest_filename, bucket=bucket_name,
+        key_prefix=manifest_prefix
     )
     print_log('manifest_s3_path:', manifest_s3_path)
 
@@ -254,15 +287,17 @@ def do_auto_labeling(ss_estimator, non_labeled_files, loop_counter):
     return output_s3_path
 
 
-def get_s3_file_list(bucket, prefix):
+def get_s3_file_list(bucket_name, prefix):
     file_list = []
     next_token = ''
     while True:
         if next_token == '':
-            response = s3_client.list_objects_v2(Bucket=bucket, Prefix=prefix)
+            response = s3_client.list_objects_v2(
+                                Bucket=bucket_name,
+                                Prefix=prefix)
         else:
             response = s3_client.list_objects_v2(
-                                Bucket=bucket, Prefix=prefix,
+                                Bucket=bucket_name, Prefix=prefix,
                                 ContinuationToken=next_token)
         for content in response['Contents']:
             key = content['Key']
@@ -298,19 +333,71 @@ def bytes_to_numpy(data):
     return np.squeeze(mask, axis=0)
 
 
-def upload_png_from_numpy(array, palette, filename):
+def concat_images(img1, img2):
+    margin = max(3, int(img1.width * 0.01))
+    dst = Image.new('P', (img1.width + img2.width +
+                          margin, img1.height), (255))
+    dst.paste(img1, (0, 0))
+    dst.paste(img2, (img1.width + margin, 0))
+    return dst
+
+
+def get_image_from_s3(img_s3_path):
+    img_prefix = img_s3_path[6+len(bucket_name):]
+    object = bucket.Object(img_prefix)
+    body = object.get()["Body"].read()
+    return Image.open(io.BytesIO(body))
+
+
+def upload_png_from_numpy(array, palette, filename, non_labeled_files):
     '''
     numpy データをインデックス付き PNG 画像に変換して S3 に保存する。
     '''
     im = Image.fromarray(array.astype(np.uint8))
     im.putpalette(palette)
     im.save(filename)
-    # png_prefix = os.path.join(prefix, project_name, timestamp, 'png')
-    upload_s3_path = sess.upload_data(
-        path=filename, bucket=bucket, key_prefix=png_prefix
-    )
+    upload_s3_path = 's3://' + os.path.join(bucket_name, png_prefix, filename)
+    s3_client.upload_file(
+                    Filename=filename,
+                    Bucket=bucket_name,
+                    Key=os.path.join(png_prefix, filename),
+                    ExtraArgs={"ContentType": "image/png"})
+    time.sleep(1)
+
+    # 推論結果ファイルと教師画像を 1枚の PNG に連結し、S3 にアップロード
+    # 自動ラベリング結果の目視評価に利用
+    for d in non_labeled_files:
+        if filename in d:
+            gt_png_s3_path = json.loads(d)[gt_job_name+'-ref']
+            # gt_png_prefix = gt_png_s3_path[6+len(bucket_name):]
+            # gt_object = bucket.Object(gt_png_prefix)
+            # body = gt_object.get()["Body"].read()
+            # gt_image = Image.open(io.BytesIO(body))
+            gt_image = get_image_from_s3(gt_png_s3_path)
+            input_img_s3_path = json.loads(d)['source-ref']
+            in_image = get_image_from_s3(input_img_s3_path)
+            in_image_filename = input_img_s3_path.split('/')[-1]
+            in_image.save(in_image_filename)
+
+            concat_image = concat_images(im, gt_image)
+            concat_image.putpalette(palette)
+            concat_filename = 'v_' + filename
+            concat_image.save(concat_filename)
+            s3_client.upload_file(
+                    Filename=concat_filename,
+                    Bucket=bucket_name,
+                    Key=os.path.join(png_viewer_prefix, concat_filename),
+                    ExtraArgs={"ContentType": "image/png"})
+            s3_client.upload_file(
+                    Filename=in_image_filename,
+                    Bucket=bucket_name,
+                    Key=os.path.join(png_viewer_prefix, in_image_filename),
+                    ExtraArgs={"ContentType": "image/jpeg"})
+
     time.sleep(1)
     os.remove(filename)
+    os.remove(concat_filename)
+    os.remove(in_image_filename)
 
     return upload_s3_path
 
@@ -373,8 +460,8 @@ def update_file_list(
     '''
     自動ラベリングの結果を評価してファイルリストを更新する。
     '''
-    data_uplpoad_prefix = auto_labeled_s3_path[6+len(bucket):] + '/'
-    file_list = get_s3_file_list(bucket, data_uplpoad_prefix)
+    data_uplpoad_prefix = auto_labeled_s3_path[6+len(bucket_name):] + '/'
+    file_list = get_s3_file_list(bucket_name, data_uplpoad_prefix)
     well_labeled_counter = 0
     confidence_list = []
     new_non_labeled_files = non_labeled_files.copy()
@@ -384,7 +471,7 @@ def update_file_list(
     for file in file_list:
 
         png_filename = os.path.basename(file)[:-len('.jpg.out')] + '.png'
-        response = s3_client.get_object(Bucket=bucket, Key=file)
+        response = s3_client.get_object(Bucket=bucket_name, Key=file)
         prob_matrix = bytes_to_numpy(response['Body'].read())
 
         # 自動ラベリング結果の採用可否を判定
@@ -400,7 +487,7 @@ def update_file_list(
             # 推論結果ファイルを PNG に変換し、S3 にアップロードして labeled_files に追加
             # labeled_files に追加したデータは non_labeled_files から削除
             upload_s3_path = upload_png_from_numpy(
-                label_array, color_pallete, png_filename)
+                label_array, color_pallete, png_filename, non_labeled_files)
 
             # 自動ラベリングの結果をファイルリストに反映
             res = update_file_list_by_autolabel(new_non_labeled_files,
@@ -422,13 +509,14 @@ def update_file_list(
     file_list_prefix = os.path.join(
         prefix, str(loop_counter), 'updated-list')
     non_labeled_files_s3_path = sess.upload_data(
-        path=non_labeled_files_filename, bucket=bucket,
+        path=non_labeled_files_filename, bucket=bucket_name,
         key_prefix=file_list_prefix
     )
     print_log('non_labeled_files_s3_path:', non_labeled_files_s3_path)
 
     labeled_files_s3_path = sess.upload_data(
-        path=labeled_files_filename, bucket=bucket, key_prefix=file_list_prefix
+        path=labeled_files_filename, bucket=bucket_name,
+        key_prefix=file_list_prefix
     )
     print_log('labeled_files_s3_path:', labeled_files_s3_path)
 
@@ -446,7 +534,8 @@ def update_file_list(
 
     prob_list_prefix = os.path.join(prefix, str(loop_counter), 'autolabel')
     upload_s3_path = sess.upload_data(
-        path=confidence_filename, bucket=bucket, key_prefix=prob_list_prefix
+        path=confidence_filename, bucket=bucket_name,
+        key_prefix=prob_list_prefix
     )
     print_log('Confidence file was uploaded to', upload_s3_path)
 
@@ -547,6 +636,89 @@ def do_test():
     return loop_counter
 
 
+def add_html_string(body_str, in_name, png_name):
+    body_str += f'            {in_name}<br>\n'
+    body_str += '            <div class="horizontal">\n'
+    body_str += f'                <img src="{in_name}" width="30%" alt=""> \n'
+    body_str += f'                <img src="{png_name}" width="60%" alt=""><br>\n'
+    body_str += '            </div>\n'
+    return body_str
+
+
+def create_png_view_pages(viewer_images_per_page):
+    # 自動ラベリング画像と教師画像を連結した画像のファイルパスを取得
+    file_list = get_s3_file_list(bucket_name, png_viewer_prefix)
+    png_file_list = [i for i in file_list if '.png' in i]
+    jpg_file_list = [i for i in file_list if '.jpg' in i]
+    viewer_images_per_page = int(viewer_images_per_page)
+    page_num = math.ceil(len(png_file_list)/viewer_images_per_page)
+    body_str_head = """
+        <body>
+            <div class="vertical">
+                左：入力画像、中央：自動ラベリング画像、右：教師画像<br>
+
+    """
+    body_str = body_str_head
+    if page_num <= 1:
+        for idx, i in enumerate(png_file_list):
+            png_file_name = os.path.basename(i)
+            jpg_file_name = os.path.basename(jpg_file_list[idx])
+            body_str = add_html_string(body_str, jpg_file_name, png_file_name)
+
+        body_str += """
+                </div>
+            </body>
+        </html>"""
+        html_file = 'index.html'
+        with open(html_file, 'w') as f:
+            f.write(html_header+body_str)
+        s3_client.upload_file(
+                Filename=html_file,
+                Bucket=bucket_name,
+                Key=os.path.join(png_viewer_prefix, html_file),
+                ExtraArgs={"ContentType": "text/html"})
+    else:
+        page_list = """
+                    <ul>
+        """
+        for p in range(page_num):
+            body_str = body_str_head
+            html_file = 'page_' + str(p) + '.html'
+            page_list += f"""
+                            <li><a href="{html_file}">{html_file}</a>"""
+            with open(html_file, 'w') as f:
+                start = p*viewer_images_per_page
+                end = min(start + viewer_images_per_page, len(png_file_list))
+                for i in range(start, end):
+                    png_file_name = os.path.basename(png_file_list[i])
+                    jpg_file_name = os.path.basename(jpg_file_list[i])
+                    body_str = add_html_string(body_str,
+                                               jpg_file_name, png_file_name)
+                body_str += """
+                        </div>
+                    </body>
+                </html>"""
+                f.write(html_header+body_str)
+            s3_client.upload_file(
+                Filename=html_file,
+                Bucket=bucket_name,
+                Key=os.path.join(png_viewer_prefix, html_file),
+                ExtraArgs={"ContentType": "text/html"})
+        html_file = 'index.html'
+        page_list += """
+                            </ul>
+                        </div>
+                    </body>
+                </html>"""
+        with open(html_file, 'w') as f:
+            f.write(html_header+page_list)
+        s3_client.upload_file(
+                Filename=html_file,
+                Bucket=bucket_name,
+                Key=os.path.join(png_viewer_prefix, html_file),
+                ExtraArgs={"ContentType": "text/html"})
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("--sample-png", type=str, default='')
@@ -557,6 +729,7 @@ if __name__ == '__main__':
     parser.add_argument("--project-name", type=str, default='')
     parser.add_argument("--gt-job-name", type=str, default='')
     parser.add_argument("--timestamp", type=str, default='')
+    parser.add_argument("--viewer-images-per-page", type=str, default='')
     parser.add_argument("--class-num", type=str, default='')
     parser.add_argument("--background-class-id", type=str, default='0')
     parser.add_argument("--confidence-thresh", type=str, default='0.98')
@@ -578,8 +751,8 @@ if __name__ == '__main__':
     base_manifest_file = os.path.join(input_file_dir, args.manifest_file)
     role = args.role_arn
     data_output_s3_path = args.data_output_path
-    bucket = args.bucket_name
-    prefix = data_output_s3_path[6+len(bucket):]
+    bucket_name = args.bucket_name
+    prefix = data_output_s3_path[6+len(bucket_name):]
     project_name = args.project_name
     confidence_thresh = float(args.confidence_thresh)
     total_confidence_thresh = float(args.total_confidence_thresh)
@@ -588,17 +761,20 @@ if __name__ == '__main__':
     train_ratio = float(args.train_ratio)  # データセットにおける学習データの割合。残りは検証データ
     timestamp = args.timestamp
     png_prefix = os.path.join(prefix, 'png')
+    png_viewer_prefix = os.path.join(prefix, 'png_view')
     base_model_path = args.base_model_path
     background_class_id = int(args.background_class_id)
     log_filename = os.path.join(result_output_dir, 'log.txt')
+    bucket = s3.Bucket(bucket_name)
 
     loop_counter = do_test()
+    create_png_view_pages(args.viewer_images_per_page)
 
     total_manual_labeled = sum(manual_labeled)
     total_auto_labeled = sum(auto_labeled)
     total_labels = total_manual_labeled + total_auto_labeled
     auto_labeled_ratio = round(total_auto_labeled*100/total_labels, 2)
-    png_s3_path = os.path.join(f's3://{bucket}', png_prefix)
+    png_s3_path = os.path.join(f's3://{bucket_name}', png_prefix)
 
     report = []
     report.append(['Number of manual labeled files: ', manual_labeled])
