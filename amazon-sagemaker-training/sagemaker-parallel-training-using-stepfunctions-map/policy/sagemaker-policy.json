@@ -1,0 +1,22 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor1",
+            "Effect": "Allow",
+            "Action": [
+                "iam:CreateRole",
+                "iam:CreatePolicy",
+                "iam:AttachRolePolicy",
+                "iam:ListAttachedRolePolicies",
+                "iam:DetachRolePolicy",
+                "iam:DeleteRole",
+                "iam:DeletePolicy",
+                "iam:ListPolicies",
+                "iam:PassRole",
+                "states:*"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
