@@ -1,0 +1,126 @@
+{
+  "Comment": "A description of my state machine",
+  "StartAt": "Lambda Invoke",
+  "States": {
+    "Lambda Invoke": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$.Payload",
+      "Parameters": {
+        "FunctionName.$": "$$.Execution.Input['LambdaFunctionARN']",
+        "Payload": {
+          "counter.$": "$.counter",
+          "input.$": "$$.Execution.Input",
+          "info.$": "$"
+        }
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Choice"
+    },
+    "Choice": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.isSpot",
+          "StringMatches": "Fail",
+          "Next": "Fail",
+          "Comment": "All candidate failed"
+        }
+      ],
+      "Default": "Train Model"
+    },
+    "Train Model": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sagemaker:createTrainingJob.sync",
+      "Parameters": {
+        "AlgorithmSpecification": {
+          "TrainingImage.$": "$$.Execution.Input['TrainingImage']",
+          "TrainingInputMode": "File"
+        },
+        "OutputDataConfig": {
+          "S3OutputPath.$": "$$.Execution.Input['S3OutputPath']"
+        },
+        "StoppingCondition.$": "$.StoppingCondition",
+        "ResourceConfig": {
+          "VolumeSizeInGB": 30,
+          "InstanceCount": 1,
+          "InstanceType.$": "$.instanceType"
+        },
+        "RoleArn.$": "$$.Execution.Input['RoleArn']",
+        "InputDataConfig": [
+          {
+            "DataSource": {
+              "S3DataSource": {
+                "S3DataType": "S3Prefix",
+                "S3Uri.$": "$$.Execution.Input['TrainingDataS3Path']",
+                "S3DataDistributionType": "FullyReplicated"
+              }
+            },
+            "ChannelName": "training"
+          }
+        ],
+        "EnableManagedSpotTraining.$": "$.isSpot",
+        "CheckpointConfig": {
+          "S3Uri.$": "$$.Execution.Input['CheckPointS3Path']",
+          "LocalPath": "/opt/ml/checkpoints"
+        },
+        "HyperParameters.$": "$$.Execution.Input['TrainingParameters']",
+        "TrainingJobName.$": "States.Format('{}-{}', $$.Execution.Input['TrainingJobName'], $.counter)"
+      },
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.TaskFailed"
+          ],
+          "Next": "Pass",
+          "ResultPath": "$.result"
+        }
+      ],
+      "Next": "Success",
+      "ResultPath": "$.cause"
+    },
+    "Pass": {
+      "Type": "Pass",
+      "Next": "DescribeTrainingJob",
+      "Parameters": {
+        "Error.$": "$.result.Error",
+        "Cause.$": "States.StringToJson($.result.Cause)",
+        "counter.$": "$.counter"
+      }
+    },
+    "DescribeTrainingJob": {
+      "Type": "Task",
+      "Parameters": {
+        "TrainingJobName.$": "$.Cause.TrainingJobName"
+      },
+      "Resource": "arn:aws:states:::aws-sdk:sagemaker:describeTrainingJob",
+      "Next": "Lambda Invoke",
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.TaskFailed"
+          ],
+          "Next": "Fail"
+        }
+      ],
+      "ResultPath": "$.result"
+    },
+    "Success": {
+      "Type": "Succeed"
+    },
+    "Fail": {
+      "Type": "Fail"
+    }
+  }
+}

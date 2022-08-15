@@ -1,0 +1,38 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "VisualEditor0",
+            "Effect": "Allow",
+            "Action": [
+                "iam:ListPolicies",
+                "states:*",
+                "s3:PutBucketPublicAccessBlock",
+                "iam:DeletePolicy",
+                "iam:CreateRole",
+                "iam:DeleteRole",
+                "iam:AttachRolePolicy",
+                "iam:CreatePolicy",
+                "s3:PutEncryptionConfiguration",
+                "iam:PassRole",
+                "iam:DetachRolePolicy",
+                "iam:ListAttachedRolePolicies",
+                "s3:PutBucketPolicy",
+                "lambda:CreateFunction",
+                "lambda:GetFunction",
+                "lambda:UpdateFunctionCode",
+                "s3:PutBucketNotification",
+                "lambda:UpdateFunctionConfiguration",
+                "lambda:AddPermission",
+                "lambda:DeleteFunction",
+                "SNS:DeleteTopic",
+                "SNS:ListSubscriptions",
+                "SNS:Unsubscribe",
+                "codebuild:*",
+                "codecommit:*",
+                "codepipeline:*"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
