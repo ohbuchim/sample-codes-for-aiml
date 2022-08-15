@@ -7,4 +7,6 @@
 - Amazon S3
 - AWS Lambda
 
+<img src="workflow.png">
+
 詳細は、sagemaker-managed-spot-training-pipeline.ipynb をご参照ください。
